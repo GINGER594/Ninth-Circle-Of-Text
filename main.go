@@ -18,11 +18,14 @@ const helpFlag string = "-help"
 const helpMessage string = "\n\r" +
 	"--- Ninth Circle of text (NCT) ---\n\r" +
 	"\n\r" +
+	"opening a file:\n\r" +
+	"> run with the path to the file you want to open\n\r" +
+	"\n\r" +
 	"flags:\n\r" +
 	"> NCT can be run with the flags '-help' & '-settings'\n\r" +
 	"\n\r" +
 	"settings:\n\r" +
-	"> running NCT with the '-settings' flag will open settings\n\r" +
+	"> running with the '-settings' flag will open settings\n\r" +
 	"> note - opening the settings file with '-settings' will open the settings file without applying any settings\n\r" +
 	"\n\r" +
 	"> entering a new setting involves a file extension, a type, an identifier, & a hue\n\r" +
