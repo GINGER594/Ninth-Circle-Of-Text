@@ -11,6 +11,5 @@ features:
 to install:
 - download the correct release for your OS
 - unzip
-- run the exe
-- optional but recommended:
--   store the executable somewhere sensible and create an alias for it in .bashrc (use env vars if on windows)
+- (optional but recommended) store the executable somewhere sensible & create an alias for it in .bashrc (if on linux)
+- run the executable
