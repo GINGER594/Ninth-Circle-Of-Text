@@ -9,8 +9,8 @@ features:
 - toggleable line numbers
 
 to install:
-- download the release for your OS from the release folder
+- download the release
 - unzip
 - run the exe
 - optional but recommended:
--   store the executable somewhere sensible and create an alias for it in .bashrc (or use windows env vars if not on linux)
+-   store the executable somewhere sensible and create an alias for it in .bashrc
