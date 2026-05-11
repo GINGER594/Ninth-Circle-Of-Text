@@ -1,5 +1,5 @@
-# Ninth-Circle-Of-Text
-A small in-terminal text editor with configurable syntax highlighting, written entirely in go without Curses
+# Ninth-Circle-Of-Text (NCT)
+a small in-terminal text editor with configurable syntax highlighting, written entirely in Go without Curses
 
 features:
 - configurable syntax highlighting (run with '-help' flag for more info)
