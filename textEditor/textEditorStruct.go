@@ -126,14 +126,14 @@ func (t *TextEditor) EndCursor() {
 	t.cur.ScrollToLineEnd(t.text)
 }
 
-// iteration ensures correct scrolling over lines
+// iteration ensures correct view scrolling over lines
 func (t *TextEditor) PageUpCursor() {
 	for i := 0; i < t.termHeight; i++ {
 		t.cur.ScrollVertical(t.text, t.termHeight, -1)
 	}
 }
 
-// iteration ensures correct scrolling over lines
+// iteration ensures correct view scrolling over lines
 func (t *TextEditor) PageDownCursor() {
 	for i := 0; i < t.termHeight; i++ {
 		t.cur.ScrollVertical(t.text, t.termHeight, 1)
