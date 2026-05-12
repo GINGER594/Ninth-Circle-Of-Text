@@ -198,14 +198,14 @@ func applyHueMap(line string, hueMap *huesettings.HueMap, inMLinCom bool) (strin
 		if splitLine := strings.Split(line, hueMap.MLinComPre); len(splitLine) >= 2 {
 			pre := applyRegularSyntaxHues(splitLine[0], hueMap)
 			post := strings.Join(splitLine[1:], hueMap.MLinComPre) //joining the rest of the line so that any remaining MLinComPre strings are still printed, but not highlighted
-			post = hueMap.MLinComHue + hueMap.MLinComPre + post
+			post = hueMap.MLinComHue + hueMap.MLinComPre + post + fgResetHue
 			return pre + post, true
 		}
 		return applyRegularSyntaxHues(line, hueMap), false
 
 	} else { //applying multi-line-comment hues to a line that is in an ongoing multi-line-comment
 		if splitLine := strings.Split(line, hueMap.MLinComSuf); len(splitLine) >= 2 {
-			pre := hueMap.MLinComHue + splitLine[0] + hueMap.MLinComSuf
+			pre := hueMap.MLinComHue + splitLine[0] + hueMap.MLinComSuf + fgResetHue
 			post := strings.Join(splitLine[1:], hueMap.MLinComSuf)
 			post = applyRegularSyntaxHues(post, hueMap)
 			return pre + post, false
