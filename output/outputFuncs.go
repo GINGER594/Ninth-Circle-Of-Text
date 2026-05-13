@@ -59,7 +59,7 @@ func applyCommentHue(line, commentSymbol, commentHue string) string {
 	if commentSymbol == "" {
 		return line
 	}
-	//checking for comment at line-start
+	//checking for comment at line-start (skipping whitespace)
 	trimmedLine := strings.TrimSpace(line)
 	if strings.HasPrefix(trimmedLine, commentSymbol) {
 		return commentHue + removeFgHues(line) + fgResetHue
@@ -75,13 +75,11 @@ func applyCommentHue(line, commentSymbol, commentHue string) string {
 	return prefix + commentHue + removeFgHues(suffix) + fgResetHue
 }
 
-// applies string hues to line (handles edge cases such as: (" \" "), ("\\") &: (" 'a' "))
 func applyStringHues(line string, stringHues map[string]string) string {
 	newLine := ""
 	substrings := []string{}
 	substring := ""
-	line = "  " + line //adding a buffer to the line so that previous 2 bytes can be parsed for \" & "\\" edge cases
-	for x := 2; x < len(line); x++ {
+	for x := 0; x < len(line); x++ {
 		chr := string(line[x])
 		if len(substring) == 0 {
 			if _, ok := stringHues[chr]; ok {
@@ -92,8 +90,12 @@ func applyStringHues(line string, stringHues map[string]string) string {
 			}
 		} else {
 			substring += chr
-			//terminating the string unless the termination is preceded by a \ (unless that \ is also preceded by a \ e.g. "\\")
-			if strSymbol := string(substring[0]); chr == strSymbol && (line[x-1] != byte('\\') || (line[x-1] == byte('\\') && line[x-2] == byte('\\'))) {
+			if chr == "\\" { //skipping over esc chars in strings
+				if x < len(line)-1 {
+					substring += string(line[x+1])
+				}
+				x += 1
+			} else if strSymbol := string(substring[0]); chr == strSymbol {
 				hue, _ := stringHues[strSymbol]
 				substrings = append(substrings, hue+removeFgHues(substring)+fgResetHue)
 				substring = ""
@@ -113,16 +115,18 @@ func applyStringHues(line string, stringHues map[string]string) string {
 
 // applies bracket hues to any bracket not preceded by an escape sequence
 func applyBracketHues(line string, bracketHues map[string]string) string {
-	line = " " + line //adding a buffer to the line so that each previous byte can be processed
-	for x := 1; x < len(line); x++ {
-		chr := string(line[x])
-		if hue, ok := bracketHues[chr]; ok && line[x-1] != 27 {
-			chr := hue + chr + fgResetHue
-			line = line[:x] + chr + line[x+1:]
-			x += len(chr) - 1
+	for x := 0; x < len(line); x++ {
+		b := line[x]
+		if b == 27 {
+			x += 1
+			continue
+		}
+		if hue, ok := bracketHues[string(b)]; ok {
+			bracket := hue + string(b) + fgResetHue
+			line = line[:x] + bracket + line[x+1:]
+			x += len(bracket) - 1
 		}
 	}
-	line = strings.TrimPrefix(line, " ") //removing buffer
 	return line
 }
 
@@ -138,26 +142,25 @@ func isNonUnderscoreSymbol(a byte) bool {
 
 // returns the longest keyword (& hue) (with no neighbouring letters or underscores) immediately at the start of a given string
 func getKeywordPrefix(str string, keywordHues map[string]string) (string, string) {
-	keywordPrefix := ""
+	foundKeyword := ""
 	for keyword := range keywordHues {
 		if strings.HasPrefix(str, keyword) {
 			nextByte := byte((str + " ")[len(keyword)])
-			if isNonUnderscoreSymbol(nextByte) && len(keyword) > len(keywordPrefix) {
-				keywordPrefix = keyword
+			if isNonUnderscoreSymbol(nextByte) && len(keyword) > len(foundKeyword) {
+				foundKeyword = keyword
 			}
 		}
 	}
-	hue, _ := keywordHues[keywordPrefix]
-	return keywordPrefix, hue
+	hue, _ := keywordHues[foundKeyword]
+	return foundKeyword, hue
 }
 
-// applies syntax hues any keywords that are not preceded or succeeded by a letter or underscore
 func applyKeywordHues(line string, keywordHues map[string]string) string {
 	var newLine strings.Builder
-	line = " " + line                 //adding a buffer to the line so that each previous byte can be processed
+	line = " " + line                 //adding a buffer space to the line so that each previous byte can be processed
 	for x := 1; x <= len(line); x++ { //iterating over each byte in line & checking for a keyword if b is a non-underscore symbol
 		b := line[x-1]
-		if x == 0 || isNonUnderscoreSymbol(b) {
+		if x == 1 || isNonUnderscoreSymbol(b) {
 			if keyword, hue := getKeywordPrefix(line[x:], keywordHues); keyword != "" {
 				newLine.WriteString(string(b) + hue + keyword + fgResetHue)
 				x += len(keyword)
@@ -166,9 +169,7 @@ func applyKeywordHues(line string, keywordHues map[string]string) string {
 		}
 		newLine.WriteString(string(b))
 	}
-	hueLine := newLine.String()
-	hueLine = strings.TrimPrefix(hueLine, " ") //removing buffer
-	return hueLine
+	return strings.TrimPrefix(newLine.String(), " ") //removing buffer space
 }
 
 // applies regular syntax hues to a line (keywords, brackets, strings & code-comments)
